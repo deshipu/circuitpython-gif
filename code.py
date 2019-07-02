@@ -21,15 +21,13 @@ class LZWDict:
         self.code_size = code_size
         self.clear_code = 1 << code_size
         self.end_code = self.clear_code + 1
-        self.codes = [bytes([i]) for i in range(self.clear_code)]
-        self.codes.append(self.clear_code)
-        self.codes.append(self.end_code)
+        self.codes = []
         self.clear()
 
     def clear(self):
         self.last = b''
         self.code_len = self.code_size + 1
-        self.codes = self.codes[0:self.end_code + 1]
+        self.codes = []
 
     def decode(self, code):
         if code == self.clear_code:
@@ -37,14 +35,17 @@ class LZWDict:
             return b''
         elif code == self.end_code:
             raise EndOfData()
-        if code < len(self.codes):
-            value = self.codes[code]
+        elif code < self.clear_code:
+            value = bytes([code])
+        elif code <= len(self.codes) + self.end_code:
+            value = self.codes[code - self.end_code - 1]
         else:
             value = self.last + self.last[0:1]
         if self.last:
             self.codes.append(self.last + value[0:1])
-        if len(self.codes) >= 1 << self.code_len and self.code_len < 12:
-            self.code_len += 1
+        if (len(self.codes) + self.end_code + 1 >= 1 << self.code_len and
+            self.code_len < 12):
+                self.code_len += 1
         self.last = value
         return value
 
