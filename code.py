@@ -27,7 +27,7 @@ class LZWDict:
     def clear(self):
         self.last = b''
         self.code_len = self.code_size + 1
-        self.codes = []
+        self.codes[:] = []
 
     def decode(self, code):
         if code == self.clear_code:
